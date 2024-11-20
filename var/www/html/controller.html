@@ -22,6 +22,11 @@
             margin-bottom: 20px;
             padding: 10px;
             border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .connected {
             background-color: #d4edda;
@@ -30,6 +35,20 @@
         .disconnected {
             background-color: #f8d7da;
             color: #721c24;
+        }
+        .status-button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+        }
+        .status-button:hover {
+            background-color: #0056b3;
         }
         .button-group {
             display: flex;
@@ -112,6 +131,7 @@
     </div>
 
     <script>
+        const SERVER_IP = '35.208.252.203'; // Replace with your server IP or hostname
         let ws = null;
         const logContainer = document.getElementById('logContainer');
         const connectionStatus = document.getElementById('connectionStatus');
@@ -143,35 +163,63 @@
 
         function updateConnectionStatus(connected) {
             connectionStatus.className = `status ${connected ? 'connected' : 'disconnected'}`;
-            connectionStatus.textContent = connected ? 'Connected' : 'Disconnected';
-            
+            connectionStatus.innerHTML = connected
+                ? 'Connected'
+                : `Disconnected: Please connect to an unsecure server for WebSocket functionality.`;
+
+            if (!connected && (location.protocol === 'https:' || location.hostname === 'ansonlai.website')) {
+                const changeServerButton = document.createElement('button');
+                changeServerButton.textContent = 'Change Server';
+                changeServerButton.className = 'status-button';
+                changeServerButton.onclick = () => {
+                    window.location.href = `http://${SERVER_IP}/controller.html`;
+                };
+                connectionStatus.appendChild(changeServerButton);
+            }
+
             for (const button of Object.values(buttons)) {
                 button.disabled = !connected;
             }
         }
 
         function connectWebSocket() {
-            const wsUrl = `ws://35.208.252.203:8001`;
-            ws = new WebSocket(wsUrl);
+            const wsUrl = `ws://${SERVER_IP}:8001`;
+            try {
+                ws = new WebSocket(wsUrl);
 
-            ws.onopen = () => {
-                updateConnectionStatus(true);
-                addLog('Connected to server', 'receive');
-            };
+                ws.onopen = () => {
+                    updateConnectionStatus(true);
+                    addLog('Connected to server', 'receive');
+                };
 
-            ws.onclose = () => {
-                updateConnectionStatus(false);
-                addLog('Disconnected from server', 'receive');
-                setTimeout(connectWebSocket, 5000);
-            };
+                ws.onclose = () => {
+                    updateConnectionStatus(false);
+                    addLog('Disconnected from server', 'receive');
+                    setTimeout(connectWebSocket, 5000);
+                };
 
-            ws.onerror = (error) => {
-                addLog(`WebSocket error: ${error.message}`, 'receive');
-            };
+                ws.onerror = (error) => {
+                    addLog(`WebSocket error: ${error.message}`, 'receive');
+                };
 
-            ws.onmessage = (event) => {
-                addLog(event.data, 'receive');
-            };
+                ws.onmessage = (event) => {
+                    addLog(event.data, 'receive');
+                };
+            } catch (error) {
+                if (location.protocol === 'https:' || location.hostname === 'ansonlai.website') {
+                    updateConnectionStatus(false);
+                    connectionStatus.innerHTML = `
+                        Mixed Content Error: Please connect to the server using an unsecured connection (http).
+                    `;
+                    const changeServerButton = document.createElement('button');
+                    changeServerButton.textContent = 'Change Server';
+                    changeServerButton.className = 'status-button';
+                    changeServerButton.onclick = () => {
+                        window.location.href = `http://${SERVER_IP}/controller.html`;
+                    };
+                    connectionStatus.appendChild(changeServerButton);
+                }
+            }
         }
 
         // Button click handlers
