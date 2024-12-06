@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP8266 Control Panel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .status-button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            font-size: 0.9em;
+            transition: background-color 0.2s;
+            white-space: nowrap;
+        }
+        .status-button:hover {
+            background-color: #0056b3;
+        }
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        button.restart {
+            background-color: #dc3545;
+        }
+        button.restart:hover {
+            background-color: #a71d2a;
+        }
+        .log-container {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+        }
+        .log-entry {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+            padding: 5px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .log-entry img {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+        }
+        .password-input {
+            margin: 10px 0;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ESP8266 Control Panel</h1>
+        
+        <div id="connectionStatus" class="status disconnected">
+            Disconnected
+        </div>
+
+        <div>
+            <input type="password" id="passwordInput" class="password-input" placeholder="Enter password">
+        </div>
+
+        <div class="button-group">
+            <button id="startButton" disabled>Start</button>
+            <button id="statusButton" disabled>Get Status</button>
+            <button id="stopButton" disabled>Force Stop</button>
+            <button id="restartButton" class="restart" disabled>Restart</button>
+        </div>
+
+        <h3>Log Messages</h3>
+        <div id="logContainer" class="log-container"></div>
+    </div>
+
+    <script>
+        const SERVER_IP = '35.208.252.203'; // Replace with your server IP or hostname
+        let ws = null;
+        const logContainer = document.getElementById('logContainer');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const passwordInput = document.getElementById('passwordInput');
+        const buttons = {
+            start: document.getElementById('startButton'),
+            status: document.getElementById('statusButton'),
+            stop: document.getElementById('stopButton'),
+            restart: document.getElementById('restartButton')
+        };
+
+        function addLog(message, type) {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+
+            const img = document.createElement('img');
+            img.src = type === 'send' ? '/images/send.png' : '/images/receive.png';
+            img.alt = '';
+
+            const text = document.createElement('span');
+            text.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+
+            entry.appendChild(img);
+            entry.appendChild(text);
+
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function updateConnectionStatus(connected) {
+            connectionStatus.className = `status ${connected ? 'connected' : 'disconnected'}`;
+            connectionStatus.innerHTML = connected
+                ? 'Connected'
+                : `Disconnected: Please connect to an unsecure server for WebSocket functionality.`;
+
+            if (!connected && (location.protocol === 'https:' || location.hostname === 'ansonlai.website')) {
+                const changeServerButton = document.createElement('button');
+                changeServerButton.textContent = 'Change Server';
+                changeServerButton.className = 'status-button';
+                changeServerButton.onclick = () => {
+                    window.location.href = `http://${SERVER_IP}/controller.html`;
+                };
+                connectionStatus.appendChild(changeServerButton);
+            }
+
+            for (const button of Object.values(buttons)) {
+                button.disabled = !connected;
+            }
+        }
+
+        function connectWebSocket() {
+            const wsUrl = `ws://${SERVER_IP}:8001`;
+            try {
+                ws = new WebSocket(wsUrl);
+
+                ws.onopen = () => {
+                    updateConnectionStatus(true);
+                    addLog('Connected to server', 'receive');
+                };
+
+                ws.onclose = () => {
+                    updateConnectionStatus(false);
+                    addLog('Disconnected from server', 'receive');
+                    setTimeout(connectWebSocket, 5000);
+                };
+
+                ws.onerror = (error) => {
+                    addLog(`WebSocket error: ${error.message}`, 'receive');
+                };
+
+                ws.onmessage = (event) => {
+                    addLog(event.data, 'receive');
+                };
+            } catch (error) {
+                if (location.protocol === 'https:' || location.hostname === 'ansonlai.website') {
+                    updateConnectionStatus(false);
+                    connectionStatus.innerHTML = `
+                        Mixed Content Error: Please connect to the server using an unsecured connection (http).
+                    `;
+                    const changeServerButton = document.createElement('button');
+                    changeServerButton.textContent = 'Change Server';
+                    changeServerButton.className = 'status-button';
+                    changeServerButton.onclick = () => {
+                        window.location.href = `http://${SERVER_IP}/controller.html`;
+                    };
+                    connectionStatus.appendChild(changeServerButton);
+                }
+            }
+        }
+
+        // Button click handlers
+        buttons.start.onclick = () => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const password = passwordInput.value;
+                ws.send(`start:${password}`);
+                addLog('START command sent', 'send');
+            }
+        };
+
+        buttons.status.onclick = () => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send('status');
+                addLog('STATUS command sent', 'send');
+            }
+        };
+
+        buttons.stop.onclick = () => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const password = passwordInput.value;
+                ws.send(`forcestop:${password}`);
+                addLog('FORCE STOP command sent', 'send');
+            }
+        };
+
+        buttons.restart.onclick = () => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                const password = passwordInput.value;
+                ws.send(`restart:${password}`);
+                addLog('RESTART command sent', 'send');
+            }
+        };
+
+        // Initial connection
+        connectWebSocket();
+    </script>
+</body>
+</html>

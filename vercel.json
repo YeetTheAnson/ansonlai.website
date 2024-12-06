@@ -1,0 +1,38 @@
+{
+  "builds": [
+    {
+      "src": "api/server.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "src/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/server.py"
+    },
+    {
+      "src": "/images/(.*)",
+      "dest": "/src/images/$1"
+    },
+    {
+      "src": "/controller",
+      "dest": "/src/controller.html"
+    },
+    {
+      "src": "/fnaf",
+      "dest": "/src/fnaf.html"
+    },
+    {
+      "src": "/samsung",
+      "dest": "/src/samsung.html"
+    },
+    {
+      "src": "/",
+      "dest": "/src/index.html"
+    }
+  ]
+}
