@@ -31,6 +31,10 @@
       "dest": "/src/samsung.html"
     },
     {
+      "src": "/mcapi",
+      "dest": "/src/mcapi.txt"
+    }
+    {
       "src": "/",
       "dest": "/src/index.html"
     }
