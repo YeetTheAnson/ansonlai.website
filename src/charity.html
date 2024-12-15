@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anson Charity INC</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Custom Frosted Glass Effect */
+        .frosted-glass {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.125);
+        }
+
+        /* Parallax Sections */
+        .parallax-bg {
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        /* Smooth Scroll and Transitions */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Rounded Widgets */
+        .rounded-widget {
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        /* Hover Effects */
+        .hover-lift:hover {
+            transform: translateY(-10px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 py-4">
+        <div class="container mx-auto px-4">
+            <div class="frosted-glass px-6 py-4 rounded-full flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-blue-600">Anson Charity INC</h1>
+                <div class="space-x-4">
+                    <a href="#home" class="text-gray-700 hover:text-blue-600">Home</a>
+                    <a href="#about" class="text-gray-700 hover:text-blue-600">About</a>
+                    <a href="#donate" class="text-gray-700 hover:text-blue-600">Donate</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section with Parallax Background -->
+    <header id="home" class="h-screen parallax-bg" style="background-image: url('images/background.jpg');">
+        <div class="flex items-center justify-center h-full bg-black bg-opacity-50">
+            <div class="text-center text-white frosted-glass p-8 rounded-xl">
+                <h1 class="text-4xl font-bold mb-4">Spreading Knowledge, One Book at a Time</h1>
+                <p class="text-xl mb-6">Help us put books in the hands of those who need them most</p>
+                <a href="#donate" class="bg-blue-600 text-white px-6 py-3 rounded-full hover:bg-blue-700 transition">Donate Now</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- About Section -->
+    <section id="about" class="py-16 bg-white">
+        <div class="container mx-auto flex items-center">
+            <div class="w-1/2 pr-8">
+                <img src="images/profile.png" alt="Founder" class="rounded-full w-64 h-64 object-cover mx-auto rounded-widget">
+            </div>
+            <div class="w-1/2">
+                <h2 class="text-3xl font-bold mb-4">About Our Founder</h2>
+                <p class="mb-4">
+                    Hi, I'm Anson Lai, a passionate advocate for literacy and education. Growing up in a small town with limited access to books, I understand the transformative power of reading. My mission is to ensure every child and adult has access to books that can inspire, educate, and change lives.
+                </p>
+                <div class="flex space-x-4">
+                    <a href="#" class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600">My Story</a>
+                    <a href="#" class="border border-blue-500 text-blue-500 px-4 py-2 rounded-full hover:bg-blue-50">Contact Me</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Donation Options -->
+    <section id="donate" class="py-16 bg-gray-100">
+        <div class="container mx-auto text-center">
+            <h2 class="text-3xl font-bold mb-8">Support Our Mission</h2>
+            <div class="flex justify-center space-x-6">
+                <div class="bg-white p-6 rounded-widget shadow-lg hover-lift">
+                    <h3 class="text-xl font-semibold mb-4">Book Donation</h3>
+                    <p class="mb-4">Donate new or gently used books to help build libraries.</p>
+                    <button class="bg-green-500 text-white px-4 py-2 rounded-full hover:bg-green-600">Donate Books</button>
+                </div>
+                <div class="bg-white p-6 rounded-widget shadow-lg hover-lift">
+                    <h3 class="text-xl font-semibold mb-4">Financial Support</h3>
+                    <p class="mb-4">Your monetary donation helps us buy and distribute books.</p>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded-full hover:bg-blue-600">Donate Funds</button>
+                </div>
+                <div class="bg-white p-6 rounded-widget shadow-lg hover-lift">
+                    <h3 class="text-xl font-semibold mb-4">Monthly Subscription</h3>
+                    <p class="mb-4">Become a monthly supporter and make a lasting impact.</p>
+                    <button class="bg-purple-500 text-white px-4 py-2 rounded-full hover:bg-purple-600">Subscribe</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024 Anson Charity INC. All Rights Reserved.</p>
+            <div class="mt-4 space-x-4">
+                <a href="#" class="hover:text-blue-300">Privacy Policy</a>
+                <a href="#" class="hover:text-blue-300">Terms of Service</a>
+                <a href="#" class="hover:text-blue-300">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth Scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
