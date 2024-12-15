@@ -35,6 +35,10 @@
       "dest": "/src/mcapi.txt"
     },
     {
+      "src": "/Charity",
+      "dest": "/src/charity.txt"
+    },
+    {
       "src": "/",
       "dest": "/src/index.html"
     }
